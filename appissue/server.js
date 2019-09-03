@@ -3,21 +3,21 @@
 
 // init project
 const express = require("express");
-const mysql = require("mysql");
+//const mysql = require("mysql");
 const app = express();
 
-const con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "1234"
-});
+// const con = mysql.createConnection({
+//   host: "localhost",
+//   user: "root",
+//   password: "1234"
+// });
 
-const connection = () => {
-  con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-  });
-};
+// const connection = () => {
+//   con.connect(function(err) {
+//     if (err) throw err;
+//     console.log("Connected!");
+//   });
+// };
 
 // we've started you off with Express,
 // but feel free to use whatever libs or frameworks you'd like through `package.json`.
@@ -47,7 +47,7 @@ app.post("/issue", function(request, response, next) {
 
 // listen for requests :)
 const listener = app.listen(process.env.PORT, function() {
-  connection();
+  //connection();
   console.log(
     "Your app is listening on port http://localhost:" + listener.address().port
   );
