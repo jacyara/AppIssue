@@ -4,6 +4,7 @@
 // init project
 const express = require("express");
 //const mysql = require("mysql");
+const axios = require("axios");
 const app = express();
 
 var Base64 = {
@@ -104,27 +105,39 @@ var Base64 = {
   }
 };
 
-function getGitURL(url) {
+async function getGitURL(url) {
+  let data;
   const username = "jacyara";
   const password = "04f6af523d1732675a9939c7f6bc29791b366263";
   const headers = {
     Accept:
-      "application/vnd.github.inertia-preview+json,  application/vnd.github.starfox-preview+json",
+      "application/vnd.github.inertia-preview+json, application/vnd.github.symmetra-preview+json",
     Authorization: "Basic " + Base64.encode(username + ":" + password)
   };
-  const options = {
-    method: "get",
-    headers: headers
-    //'muteHttpExceptions' : true,
-  };
-  return JSON.parse(UrlFetchApp.fetch(url, options).getContentText());
+  try {
+    const response = await axios.get(url, { params: {}, headers });
+    data = response.data;
+  } catch (error) {
+    console.error(error);
+  }
+
+  return data;
 }
 
-function test() {
-  console.log(
-    getGitURL("https://api.github.com/orgs/laboratoriobridge/issues")
+async function getProjects() {
+  return await getGitURL(
+    "https://api.github.com/repos/laboratoriobridge/pec/projects"
   );
 }
+
+async function main() {
+  const projetos = await getProjects();
+  projetos.map(item => console.log(item.name + " " + item.creator.login));
+}
+
+main();
+
+/*
 // const con = mysql.createConnection({
 //   host: "localhost",
 //   user: "root",
@@ -150,18 +163,18 @@ app.get("/", function(request, response) {
 });
 
 app.post("/issue", function(request, response, next) {
-  request.on("data", function(data) {
-    console.log("Dados da Issue: ");
-    console.log("Ação: " + JSON.parse("" + data).action);
-    console.log(
-      "Nome: " +
-        JSON.parse("" + data).issue.title +
-        " Número: " +
-        JSON.parse("" + data).issue.number
-    );
-    console.log("Label: " + JSON.parse("" + data).issue.labels);
-  });
-  response.send("OK");
+  // request.on("data", function(data) {
+  //   console.log("Dados da Issue: ");
+  //   console.log("Ação: " + JSON.parse("" + data).action);
+  //   console.log(
+  //     "Nome: " +
+  //       JSON.parse("" + data).issue.title +
+  //       " Número: " +
+  //       JSON.parse("" + data).issue.number
+  //   );
+  //   console.log("Label: " + JSON.parse("" + data).issue.labels);
+  // });
+  // response.send("OK");
 });
 
 // listen for requests :)
@@ -171,3 +184,4 @@ const listener = app.listen(process.env.PORT, function() {
     "Your app is listening on port http://localhost:" + listener.address().port
   );
 });
+*/
