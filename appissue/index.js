@@ -134,7 +134,7 @@ async function getProjects() {
 
 async function main() {
   const projetos = await getProjects();
-  projetos.map(item => console.log(item.name + " " + item.creator.login));
+  //projetos.map(item => console.log(item.name + " " + item.creator.login));
   const listener = app.listen(process.env.PORT, function() {
     //connection();
     console.log(
