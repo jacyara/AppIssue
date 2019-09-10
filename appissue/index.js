@@ -134,7 +134,7 @@ async function getProjects() {
 
 async function main() {
   const projetos = await getProjects();
-  //projetos.map(item => console.log(item.name + " " + item.creator.login));
+  projetos.map(item => console.log(item.name + " " + item.creator.login));
   const listener = app.listen(process.env.PORT, function() {
     //connection();
     console.log(
@@ -153,6 +153,7 @@ const client = new Client({
 
 client.connect();
 console.log(client);
+
 client.query(
   "SELECT table_schema,table_name FROM information_schema.tables;",
   (err, res) => {
