@@ -147,12 +147,12 @@ async function main() {
 main();
 
 const client = new Client({
-  connectionString: "postgresql-silhouetted-26637",
+  connectionString: process.env.DATABASE_URL,
   ssl: true
 });
 
 client.connect();
-
+console.log(client);
 client.query(
   "SELECT table_schema,table_name FROM information_schema.tables;",
   (err, res) => {
