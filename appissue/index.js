@@ -6,6 +6,8 @@ const express = require("express");
 //const mysql = require("mysql");
 const axios = require("axios");
 const app = express();
+//const ssl = require("sslmode");
+const { Client } = require("pg");
 
 var Base64 = {
   _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -108,7 +110,7 @@ var Base64 = {
 async function getGitURL(url) {
   let data;
   const username = "jacyara";
-  const password = "04f6af523d1732675a9939c7f6bc29791b366263";
+  const password = "5a960b9a47910048d9d4dc70a127572c61b90595";
   const headers = {
     Accept:
       "application/vnd.github.inertia-preview+json, application/vnd.github.symmetra-preview+json",
@@ -133,11 +135,35 @@ async function getProjects() {
 async function main() {
   const projetos = await getProjects();
   projetos.map(item => console.log(item.name + " " + item.creator.login));
+  const listener = app.listen(process.env.PORT, function() {
+    //connection();
+    console.log(
+      "Your app is listening on port http://localhost:" +
+        listener.address().port
+    );
+  });
 }
 
 main();
 
-/*
+const client = new Client({
+  connectionString: "postgresql-silhouetted-26637",
+  ssl: true
+});
+
+client.connect();
+
+client.query(
+  "SELECT table_schema,table_name FROM information_schema.tables;",
+  (err, res) => {
+    if (err) throw err;
+    for (let row of res.rows) {
+      console.log(JSON.stringify(row));
+    }
+    client.end();
+  }
+);
+
 // const con = mysql.createConnection({
 //   host: "localhost",
 //   user: "root",
@@ -154,7 +180,7 @@ main();
 // we've started you off with Express,
 // but feel free to use whatever libs or frameworks you'd like through `package.json`.
 
-// http://expressjs.com/en/starter/static-files.html
+//http://expressjs.com/en/starter/static-files.html
 app.use(express.static("public"));
 
 // http://expressjs.com/en/starter/basic-routing.html
@@ -162,26 +188,25 @@ app.get("/", function(request, response) {
   response.sendFile(__dirname + "/views/index.html");
 });
 
-app.post("/issue", function(request, response, next) {
-  // request.on("data", function(data) {
-  //   console.log("Dados da Issue: ");
-  //   console.log("Ação: " + JSON.parse("" + data).action);
-  //   console.log(
-  //     "Nome: " +
-  //       JSON.parse("" + data).issue.title +
-  //       " Número: " +
-  //       JSON.parse("" + data).issue.number
-  //   );
-  //   console.log("Label: " + JSON.parse("" + data).issue.labels);
-  // });
-  // response.send("OK");
-});
+//app.post("/issue", function(request, response, next) {
+// request.on("data", function(data) {
+//   console.log("Dados da Issue: ");
+//   console.log("Ação: " + JSON.parse("" + data).action);
+//   console.log(
+//     "Nome: " +
+//       JSON.parse("" + data).issue.title +
+//       " Número: " +
+//       JSON.parse("" + data).issue.number
+//   );
+//   console.log("Label: " + JSON.parse("" + data).issue.labels);
+// });
+// response.send("OK");
+//});
 
 // listen for requests :)
-const listener = app.listen(process.env.PORT, function() {
-  //connection();
-  console.log(
-    "Your app is listening on port http://localhost:" + listener.address().port
-  );
-});
-*/
+// const listener = app.listen(process.env.PORT, function() {
+//   //connection();
+//   console.log(
+//     "Your app is listening on port http://localhost:" + listener.address().port
+//   );
+// });
