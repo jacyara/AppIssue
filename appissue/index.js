@@ -109,8 +109,7 @@ var Base64 = {
 
 async function getGitURL(url) {
   let data;
-  const username = "jacyara";
-  const password = "5a960b9a47910048d9d4dc70a127572c61b90595";
+// user and psswrd
   const headers = {
     Accept:
       "application/vnd.github.inertia-preview+json, application/vnd.github.symmetra-preview+json",
