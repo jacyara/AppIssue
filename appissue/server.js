@@ -133,8 +133,14 @@ async function getProjects() {
   );
 }
 
+async function getColunas(projectId) {
+  const url = "https://api.github.com/projects/" + projectId + "/columns";
+  return getGitURL(url);
+}
+
 async function main() {
   const projetos = await getProjects();
+  //insertColumns(projectId);
   projetos.map(item => console.log(item.name + " " + item.creator.login));
   const listener = app.listen(5000, function() {
     //connection();
@@ -162,18 +168,63 @@ client.connect(err => {
     console.log("connected");
   }
 });
-// client.query("SELECT NOW()", (err, res) => {
-//   if (err) throw err;
-//   console.log(res);
-//   client.end();
-// });
+
 async function projectExpected(request, response) {
-  const projetos = await getProjects();
-  //projetos.map(item => console.log(item.name + " " + item.creator.login));
-  response.send({ projetos });
+  client.query("SELECT board.nome FROM board", async (err, res) => {
+    try {
+      if (err) throw err;
+      console.log(res);
+      if (res.rowCount === 0) {
+        const bu = await getProjects();
+        bu.map(item => {
+          console.log("VALORES " + item.id + item.name);
+          var sql = "INSERT INTO board (id, nome) VALUES ($1, $2)";
+          client.query(sql, [item.id, item.name], function(err, result) {
+            try {
+              if (err) throw err;
+              console.log("Number of records inserted: " + result.affectedRows);
+            } catch (error) {
+              console.log(error);
+            }
+          });
+        });
+      }
+      //client.end();
+    } catch (error) {
+      console.log(error);
+    }
+    console.log("RES  " + res);
+    response.send({ res });
+  });
+}
+app.get("/kkk", projectExpected);
+
+async function colunasExpected(request, response) {
+  console.log(request);
+  response.send({ name: "oi" });
 }
 
-app.get("/kkk", projectExpected);
+app.get("/col", colunasExpected);
+
+async function insertColumns(projectId) {
+  const colunas = await getColunas(projectId);
+  console.log(colunas);
+  colunas.map(item => {
+    var sqlSelect = "SELECT board.id FROM board WHERE id = $3";
+    var sql =
+      "INSERT INTO coluna (id, nome, id_board) VALUES ($1, $2, (" +
+      sqlSelect +
+      "))";
+    client.query(sql, [item.id, item.name, projectId], function(err, result) {
+      try {
+        if (err) throw err;
+        console.log("Number of records inserted: " + result.affectedRows);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  });
+}
 
 // Heroku
 // const client = new Client({
