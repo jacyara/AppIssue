@@ -1,31 +1,43 @@
 import axios from "axios";
-import { Button } from "bold-ui";
+import { DataTable } from "bold-ui";
 import React, { useEffect, useState } from "react";
+import { Projeto } from "./Equipes";
 
-interface Projeto {
-  id: number;
+type Coluna = {
   nome: string;
+};
+
+interface ColunaProps {
+  projeto: Projeto;
 }
 
-export default function Colunas() {
-  //var oi = "";
-  const [projetos, setProjetos] = useState<Projeto[]>();
-  console.log("sws");
-  useEffect(() => {
-    axios.get("/col", { params: { id: "2" } }).then(resp => {
-      setProjetos(resp.data);
-      console.log("swswsw" + resp);
-    });
-  }, []);
+export const Colunas = (props: ColunaProps) => {
+  const [coluna, setColuna] = useState<Coluna[]>();
 
-  if (!projetos) {
+  // console.log("Projeto: " + props.projeto.id);
+
+  useEffect(() => {
+    axios.get("/col", { params: { id: props.projeto.id } }).then(resp => {
+      console.log("resp", resp.data.result.rows);
+      setColuna(resp.data.result.rows);
+    });
+  }, [props.projeto]);
+
+  if (!props || !coluna || !coluna[0]) {
     return null;
   }
-  console.log(projetos);
-  console.log("swsw");
+
+  console.log("colunas", coluna);
   return (
-    <>
-      <Button>sese</Button>
-    </>
+    <DataTable<Coluna>
+      rows={coluna}
+      columns={[{ name: "equipe", render: item => item.nome }]}
+    />
+
+    // <>
+    //   <Button>{coluna[2].nome}</Button>
+    // </>
   );
-}
+};
+
+export default Colunas;

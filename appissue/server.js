@@ -141,7 +141,7 @@ async function getColunas(projectId) {
 async function main() {
   const projetos = await getProjects();
   //insertColumns(projectId);
-  projetos.map(item => console.log(item.name + " " + item.creator.login));
+  //projetos.map(item => console.log(item.name + " " + item.creator.login));
   const listener = app.listen(5000, function() {
     //connection();
     console.log(
@@ -170,7 +170,7 @@ client.connect(err => {
 });
 
 async function projectExpected(request, response) {
-  client.query("SELECT board.nome FROM board", async (err, res) => {
+  client.query("SELECT * FROM board", async (err, res) => {
     try {
       if (err) throw err;
       console.log(res);
@@ -200,8 +200,16 @@ async function projectExpected(request, response) {
 app.get("/kkk", projectExpected);
 
 async function colunasExpected(request, response) {
-  console.log(request);
-  response.send({ name: "oi" });
+  var sql = "SELECT coluna.nome FROM coluna WHERE coluna.id_board=$1";
+  client.query(sql, [request.query.id], function(err, result) {
+    try {
+      if (err) throw err;
+      console.log("Number of records inserted: " + result.affectedRows);
+    } catch (error) {
+      console.log(error);
+    }
+    response.send({ result });
+  });
 }
 
 app.get("/col", colunasExpected);

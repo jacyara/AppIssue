@@ -1,40 +1,52 @@
 import axios from "axios";
-import { DataTable } from "bold-ui";
+import { Select, VFlow } from "bold-ui";
 import React, { useEffect, useState } from "react";
 import Colunas from "./Colunas";
 
-interface Projeto {
-  id: number;
+export type Projeto = {
+  id: string;
   nome: string;
-}
+};
 
 export default function Equipes() {
-  //var oi = "";
   const [projetos, setProjetos] = useState<Projeto[]>();
+  const [statusSelecionado, setstatusSelecionado] = useState<Projeto>();
+
   useEffect(() => {
     axios.get("/kkk").then(resp => {
-      // console.log(resp.data);
-      //setState(resp.data.n);
       setProjetos(resp.data.res.rows);
-      // console.log("data", resp.data);
-      // console.log("state", projetos);
-      // projetos && projetos.map(item => console.log(item.nome));
-
-      //console.log(state.projetos.map())
     });
   }, []);
+
+  console.log(projetos);
 
   if (!projetos) {
     return null;
   }
-  console.log(projetos);
+
+  //console.log("Projetos " + projetos.map(item => item.nome || null));
+  const itemToString = (item: Projeto | null) => {
+    if (!item) return "";
+    return item.nome;
+  };
+  const handleOnChange = (item: Projeto) => {
+    //console.log("handle", item);
+    setstatusSelecionado(item);
+  };
+
+  //console.log("selectionado", statusSelecionado);
   return (
     <>
-      <DataTable
-        rows={projetos}
-        columns={[{ name: "equipe", render: item => item.nome }]}
-      />
-      <Colunas />
+      <VFlow>
+        <Select<Projeto>
+          items={projetos}
+          onChange={handleOnChange}
+          itemToString={itemToString}
+          name="equipes"
+          clearable={false}
+        />
+        {statusSelecionado && <Colunas projeto={statusSelecionado} />}
+      </VFlow>
     </>
   );
 }
