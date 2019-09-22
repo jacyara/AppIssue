@@ -14,7 +14,7 @@ interface ColunaProps {
 export const Colunas = (props: ColunaProps) => {
   const [coluna, setColuna] = useState<Coluna[]>();
 
-  // console.log("Projeto: " + props.projeto.id);
+  console.log("Projeto: ", props);
 
   useEffect(() => {
     axios.get("/col", { params: { id: props.projeto.id } }).then(resp => {

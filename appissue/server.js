@@ -114,7 +114,7 @@ async function getGitURL(url) {
   const password = "";
   const headers = {
     Accept:
-      "application/vnd.github.inertia-preview+json, application/vnd.github.symmetra-preview+json",
+      "application/vnd.github.inertia-preview+json, application/vnd.github.symmetra-preview+json, application/vnd.github.machine-man-preview, application/vnd.github.starfox-preview+json",
     Authorization: "Basic " + Base64.encode(username + ":" + password)
   };
   try {
@@ -138,8 +138,28 @@ async function getColunas(projectId) {
   return getGitURL(url);
 }
 
+async function getCards(colunaId) {
+  const url = "https://api.github.com/projects/columns/" + colunaId + "/cards";
+  return getGitURL(url);
+}
+
+async function getEvents(pageId) {
+  const url =
+    "https://api.github.com/repos/laboratoriobridge/pec/issues/events?page=" +
+    pageId;
+  return getGitURL(url);
+}
+
+async function getLabels() {
+  const url = "https://api.github.com/repos/laboratoriobridge/pec/labels";
+  return getGitURL(url);
+}
+
 async function main() {
   const projetos = await getProjects();
+  pegarEventos();
+  //insertLabels();
+  // insertCards("4924040");
   //insertColumns(projectId);
   //projetos.map(item => console.log(item.name + " " + item.creator.login));
   const listener = app.listen(5000, function() {
@@ -173,7 +193,7 @@ async function projectExpected(request, response) {
   client.query("SELECT * FROM board", async (err, res) => {
     try {
       if (err) throw err;
-      console.log(res);
+      // console.log(res);
       if (res.rowCount === 0) {
         const bu = await getProjects();
         bu.map(item => {
@@ -193,7 +213,7 @@ async function projectExpected(request, response) {
     } catch (error) {
       console.log(error);
     }
-    console.log("RES  " + res);
+    // console.log("RES  " + res);
     response.send({ res });
   });
 }
@@ -224,6 +244,263 @@ async function insertColumns(projectId) {
       sqlSelect +
       "))";
     client.query(sql, [item.id, item.name, projectId], function(err, result) {
+      try {
+        if (err) throw err;
+        console.log("Number of records inserted: " + result.affectedRows);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  });
+}
+
+async function pegarEventos() {
+  let i = 0;
+  let eventos = await getEvents(i);
+  do {
+    eventos.map(evento => {
+      switch (evento.event) {
+        case "closed": {
+          console.log(evento.event);
+          client.query(
+            "INSERT INTO eventos (id, evento, created, id_issue) values ($1, $2, $3, $4)",
+            [evento.id, evento.event, evento.created_at, evento.issue.number],
+            function(err, result) {
+              try {
+                if (err) throw err;
+                console.log(
+                  "Number of records inserted: " + result.affectedRows
+                );
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          );
+          break;
+        }
+        case "added_to_project": {
+          //console.log(evento.event);
+          insertIssues(evento);
+          insertCards(evento);
+          client.query(
+            "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto) values ($1, $2, $3, $4, $5, $6, $7)",
+            [
+              evento.id,
+              evento.event,
+              evento.created_at,
+              evento.issue.number,
+              evento.project_card.id,
+              evento.project_card.column_name,
+              evento.project_card.project_id
+            ],
+            function(err, result) {
+              try {
+                if (err) throw err;
+                console.log(
+                  "Number of records inserted: " + result.affectedRows
+                );
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          );
+          break;
+        }
+        case "converted_note_to_issue": {
+          console.log(evento.event);
+          insertIssues(evento);
+          insertCards(evento);
+          client.query(
+            "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto) values ($1, $2, $3, $4, $5, $6, $7)",
+            [
+              evento.id,
+              evento.event,
+              evento.created_at,
+              evento.issue.number,
+              evento.project_card.id,
+              evento.project_card.column_name,
+              evento.project_card.project_id
+            ],
+            function(err, result) {
+              try {
+                if (err) throw err;
+                console.log(
+                  "Number of records inserted: " + result.affectedRows
+                );
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          );
+          break;
+        }
+        case "moved_columns_in_project": {
+          console.log(evento.event);
+          client.query(
+            "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto, coluna_anterior) values ($1, $2, $3, $4, $5, $6, $7, $8)",
+            [
+              evento.id,
+              evento.event,
+              evento.created_at,
+              evento.issue.number,
+              evento.project_card.id,
+              evento.project_card.column_name,
+              evento.project_card.project_id,
+              evento.project_card.previous_column_name
+            ],
+            function(err, result) {
+              try {
+                if (err) throw err;
+                console.log(
+                  "Number of records inserted: " + result.affectedRows
+                );
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          );
+          break;
+        }
+        case "removed_from_project": {
+          client.query(
+            "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto) values ($1, $2, $3, $4, $5, $6, $7)",
+            [
+              evento.id,
+              evento.event,
+              evento.created_at,
+              evento.issue.number,
+              evento.project_card.id,
+              evento.project_card.column_name,
+              evento.project_card.project_id
+            ],
+            function(err, result) {
+              try {
+                if (err) throw err;
+                console.log(
+                  "Number of records inserted: " + result.affectedRows
+                );
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          );
+          break;
+        }
+        case "reopened": {
+          client.query(
+            "INSERT INTO eventos (id, evento, created, id_issue) values ($1, $2, $3, $4)",
+            [evento.id, evento.event, evento.created_at, evento.issue.number],
+            function(err, result) {
+              try {
+                if (err) throw err;
+                console.log(
+                  "Number of records inserted: " + result.affectedRows
+                );
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          );
+        }
+        case "labeled": {
+          //console.log(evento);
+          client.query(
+            "INSERT INTO rl_label_issue (id_issue, coluna) values ($1, $2)",
+            [evento.issue.number, evento.label.name],
+            function(err, result) {
+              try {
+                if (err) throw err;
+                console.log(
+                  "Number of records inserted: " + result.affectedRows
+                );
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          );
+          break;
+        }
+        case "unlabeled": {
+          console.log(evento);
+          client.query(
+            "DELETE FROM rl_label_issue where id_issue=$1 and coluna=$2",
+            [evento.issue.number, evento.label.name],
+            function(err, result) {
+              try {
+                if (err) throw err;
+                console.log(
+                  "Number of records inserted: " + result.affectedRows
+                );
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          );
+          break;
+        }
+        default:
+          break;
+      }
+    });
+    i++;
+    eventos = await getEvents(i);
+  } while (i < 30);
+
+  //console.log("Eventos: ", eventos.length);
+}
+
+async function insertIssues(evento) {
+  client.query(
+    "INSERT INTO issue (id, nome, estado, modificacao) values ($1, $2, $3, $4)",
+    [
+      evento.issue.number,
+      evento.issue.title,
+      evento.issue.state,
+      evento.issue.updated_at
+    ],
+    async function(err, result) {
+      try {
+        if (err) throw err;
+        console.log("Number of records inserted: " + result.affectedRows);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  );
+}
+
+async function insertCards(evento) {
+  console.log(evento.project_card);
+  // let issue = itemCard.content_url;
+  // let numberIssue =
+  //   issue && issue.substring(issue.lastIndexOf("/") + 1, issue.length);
+  var sql =
+    "INSERT INTO cards (id, created, project_id, coluna, number_issue) VALUES ($1, $2, $3, $4, $5)";
+  client.query(
+    sql,
+    [
+      evento.project_card.id,
+      evento.created_at,
+      evento.project_card.project_id,
+      evento.project_card.column_name,
+      evento.issue.number
+    ],
+    function(err, result) {
+      try {
+        if (err) throw err;
+        console.log("Number of records inserted: " + result.affectedRows);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  );
+}
+
+async function insertLabels() {
+  const labels = await getLabels();
+  labels.map(labels => {
+    var sql = "INSERT INTO label (id, nome) VALUES ($1, $2)";
+    client.query(sql, [labels.id, labels.name], function(err, result) {
       try {
         if (err) throw err;
         console.log("Number of records inserted: " + result.affectedRows);
