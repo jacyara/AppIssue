@@ -157,7 +157,7 @@ async function getLabels() {
 
 async function main() {
   const projetos = await getProjects();
-  pegarEventos();
+  //pegarEventos();
   //insertLabels();
   // insertCards("4924040");
   //insertColumns(projectId);
@@ -401,6 +401,7 @@ async function pegarEventos() {
               }
             }
           );
+          break;
         }
         case "labeled": {
           //console.log(evento);
@@ -444,7 +445,7 @@ async function pegarEventos() {
     });
     i++;
     eventos = await getEvents(i);
-  } while (i < 30);
+  } while (i < 509);
 
   //console.log("Eventos: ", eventos.length);
 }
