@@ -157,6 +157,7 @@ async function getLabels() {
 
 async function main() {
   const projetos = await getProjects();
+  issuesPorColuna();
   //pegarEventos();
   //insertLabels();
   // insertCards("4924040");
@@ -175,7 +176,7 @@ main();
 
 const client = new Client({
   host: "localhost",
-  port: 5432,
+  port: 5436,
   user: "root",
   password: "1234",
   database: "appissue"
@@ -511,6 +512,63 @@ async function insertLabels() {
     });
   });
 }
+
+async function issuesPorColuna(request, response) {
+  var sql =
+    "select coluna, count( coluna ) from ( select max( id ) as id, id_issue from eventos as e " +
+    "where created between to_date( '09/09/2019', 'dd/mm/yyyy') and to_date('16/09/2019','dd/mm/yyyy') " +
+    "and id_projeto = $1 and evento not in( 'closed', 'reopened', 'lebeled','unlabeled', 'removed_from_project') " +
+    "and id_issue not in( select distinct ev.id_issue from eventos as ev join cards on cards.number_issue = ev.id_issue " +
+    "where evento like 'closed'and ev.created < to_date('09/09/2019','dd/mm/yyyy') " +
+    "and cards.project_id = 2419251) " +
+    "group by e.id_issue) as sub join eventos on sub.id = eventos.id " +
+    "group by coluna";
+  client.query(sql, [request.query.id], function(err, result) {
+    try {
+      if (err) throw err;
+    } catch (error) {
+      console.log(error);
+    }
+    response.send({ result });
+    //console.log("Issues, colunas", result);
+  });
+}
+
+app.get("/ipc", issuesPorColuna);
+
+async function issuesAbertas(request, response) {
+  var sql =
+    "select distinct issue.id, issue.nome, min(cards.created) as created from eventos join issue on eventos.id_issue = issue.id " +
+    "join cards on issue.id = cards.number_issue where id_card is not null and id_projeto=$1 and id_issue  not in (select id_issue from eventos where evento='closed') " +
+    " group by issue.id, issue.nome";
+  client.query(sql, [request.query.id], function(err, result) {
+    try {
+      if (err) throw err;
+    } catch (error) {
+      console.log(error);
+    }
+    response.send({ result });
+    //console.log("Issues, colunas", result);
+  });
+}
+
+app.get("/abertas", issuesAbertas);
+
+async function issuesFechadas(request, response) {
+  var sql =
+    "select distinct issue.id, issue.nome, eventos.evento, eventos.created as fechada, cards.created as aberta from eventos join issue on eventos.id_issue = issue.id " +
+    "inner join cards on issue.id = cards.number_issue where cards.project_id=$1 and eventos.evento='closed' and id_issue not in (select id_issue from eventos where evento='reopened') or evento='removed_from_project'";
+  client.query(sql, [request.query.id], function(err, result) {
+    try {
+      if (err) throw err;
+    } catch (error) {
+      console.log(error);
+    }
+    response.send({ result });
+  });
+}
+
+app.get("/fechadas", issuesFechadas);
 
 // Heroku
 // const client = new Client({
