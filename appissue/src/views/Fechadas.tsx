@@ -29,7 +29,7 @@ export const Fechadas = (props: FechadaProps) => {
   }
 
   const renderLeadTime = (row: Fechadas) => {
-    const date1 = moment(row.aberta, "");
+    const date1 = moment(row.aberta);
     const date2 = moment(row.fechada);
     const diferenca = moment.duration(date2.diff(date1));
     const days = diferenca.asDays();

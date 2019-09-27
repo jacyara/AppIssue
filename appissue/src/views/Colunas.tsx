@@ -29,31 +29,61 @@ export const Colunas = (props: ColunaProps) => {
       console.log("resp", resp.data.result.rows);
       setColuna(resp.data.result.rows);
     });
-    axios.get("/ipc", { params: { id: props.projeto.id } }).then(resp => {
-      console.log("ipc: ", resp.data.result.rows);
-      setIcp(resp.data.result.rows);
-    });
+    axios
+      .get("/ipc", {
+        params: {
+          id: props.projeto.id
+        }
+      })
+      .then(resp => {
+        console.log("ipc: ", resp.data);
+        setIcp(resp.data.result.rows);
+      });
   }, [props.projeto]);
 
   if (!props || !coluna || !coluna[0] || !icp) {
     return null;
   }
 
-  let c: [TableColumnConfig] = [
+  let cols: [TableColumnConfig] = [
     {
       name: "",
       header: "",
       render: () => <span></span>
     }
   ];
-  coluna.forEach(
-    (item, index) =>
-      (c[index] = {
-        name: item.nome,
-        header: item.nome,
-        render: a => <span>{a.get(item.nome)}</span>
-      })
-  );
+  let c = [
+    {
+      name: "",
+      header: "",
+      render: () => <span></span>
+    },
+    {
+      name: "",
+      header: "",
+      render: () => <span></span>
+    },
+    ...cols
+  ];
+
+  c[0] = {
+    name: "Data Início",
+    header: "Data Início",
+    render: a => "09/09/2019"
+  };
+  c[1] = {
+    name: "Data Fim",
+    header: "Data Fim",
+    render: a => "16/09/2019"
+  };
+
+  coluna.forEach((item, index) => {
+    c[index + 2] = {
+      name: item.nome,
+      header: item.nome,
+      render: a => <span>{a.get(item.nome)}</span>
+    };
+  });
 
   const renderIssue = () => {
     let issues = new Map();
@@ -73,7 +103,6 @@ export const Colunas = (props: ColunaProps) => {
   return (
     <>
       <DataTable rows={[renderIssue()]} columns={c} />
-      <h2>Issues abertas!</h2>
 
       <Abertas projeto={props.projeto} />
       <Fechadas projeto={props.projeto} />

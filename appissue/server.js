@@ -520,10 +520,11 @@ async function issuesPorColuna(request, response) {
     "and id_projeto = $1 and evento not in( 'closed', 'reopened', 'lebeled','unlabeled', 'removed_from_project') " +
     "and id_issue not in( select distinct ev.id_issue from eventos as ev join cards on cards.number_issue = ev.id_issue " +
     "where evento like 'closed'and ev.created < to_date('09/09/2019','dd/mm/yyyy') " +
-    "and cards.project_id = 2419251) " +
+    "and cards.project_id = $1) " +
     "group by e.id_issue) as sub join eventos on sub.id = eventos.id " +
     "group by coluna";
   client.query(sql, [request.query.id], function(err, result) {
+    console.log(request);
     try {
       if (err) throw err;
     } catch (error) {
@@ -538,7 +539,7 @@ app.get("/ipc", issuesPorColuna);
 
 async function issuesAbertas(request, response) {
   var sql =
-    "select distinct issue.id, issue.nome, min(cards.created) as created from eventos join issue on eventos.id_issue = issue.id " +
+    "select distinct issue.id, issue.nome, max(cards.created) as created from eventos join issue on eventos.id_issue = issue.id " +
     "join cards on issue.id = cards.number_issue where id_card is not null and id_projeto=$1 and id_issue  not in (select id_issue from eventos where evento='closed') " +
     " group by issue.id, issue.nome";
   client.query(sql, [request.query.id], function(err, result) {
@@ -557,7 +558,7 @@ app.get("/abertas", issuesAbertas);
 async function issuesFechadas(request, response) {
   var sql =
     "select distinct issue.id, issue.nome, eventos.evento, eventos.created as fechada, cards.created as aberta from eventos join issue on eventos.id_issue = issue.id " +
-    "inner join cards on issue.id = cards.number_issue where cards.project_id=$1 and eventos.evento='closed' and id_issue not in (select id_issue from eventos where evento='reopened') or evento='removed_from_project'";
+    "inner join cards on issue.id = cards.number_issue where cards.project_id=$1 and eventos.evento='closed' and id_issue not in (select id_issue from eventos where evento='reopened' or evento='removed_from_project')";
   client.query(sql, [request.query.id], function(err, result) {
     try {
       if (err) throw err;
