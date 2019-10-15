@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Cell, DataTable, Grid, Theme, useStyles } from "bold-ui";
+import { Cell, DataTable, Grid, Theme, useStyles, VFlow } from "bold-ui";
 import moment from "moment";
 import React, { CSSProperties, useEffect, useState } from "react";
 import { DateTime } from "./DateTime";
@@ -39,37 +39,41 @@ export const Abertas = (props: AbertasProps) => {
 
   return (
     <>
-      <h2 className={classes.container}>Issues abertas!</h2>
       <Grid alignItems="center">
-        <Cell size={12}>
-          <DataTable<Abertas>
-            rows={abertas}
-            columns={[
-              {
-                name: "issue",
-                header: "#Issue",
-                render: item => item.id
-              },
-              {
-                name: "nome",
-                header: "Título da Issue",
-                render: item => item.nome
-              },
-              {
-                name: "data",
-                header: "Data de criação",
-                render: item => (
-                  <DateTime value={item.created} format="DD/MM/YYYY" />
-                )
-              },
-              {
-                name: "lead time",
-                header: "Lead Time Atual",
-                render: renderLeadTime
-              }
-            ]}
-          />
+        <Cell size={2} />
+        <Cell size={8}>
+          <VFlow>
+            <h2 className={classes.container}>Issues abertas!</h2>
+            <DataTable<Abertas>
+              rows={abertas}
+              columns={[
+                {
+                  name: "issue",
+                  header: "#Issue",
+                  render: item => item.id
+                },
+                {
+                  name: "nome",
+                  header: "Título da Issue",
+                  render: item => item.nome
+                },
+                {
+                  name: "data",
+                  header: "Data de criação",
+                  render: item => (
+                    <DateTime value={item.created} format="DD/MM/YYYY" />
+                  )
+                },
+                {
+                  name: "lead time",
+                  header: "Lead Time Atual",
+                  render: renderLeadTime
+                }
+              ]}
+            />
+          </VFlow>
         </Cell>
+        <Cell size={2} />
       </Grid>
     </>
   );

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { DataTable } from "bold-ui";
+import { Cell, DataTable, DateField, Grid, HFlow, VFlow } from "bold-ui";
 import { TableColumnConfig } from "bold-ui/lib/components/Table/DataTable/DataTable";
 import React, { useEffect, useState } from "react";
 import { Abertas } from "./Abertas";
@@ -19,27 +19,45 @@ interface ColunaProps {
   projeto: Projeto;
 }
 
+interface Periodo {
+  dataInicio: string;
+  dataFim: string;
+}
+
 export const Colunas = (props: ColunaProps) => {
   const [coluna, setColuna] = useState<Coluna[]>();
 
   const [icp, setIcp] = useState<Icp[]>();
 
+  const [periodo, setPeriodo] = useState<Periodo>({
+    dataInicio: "09/09/2019",
+    dataFim: "16/09/2019"
+  });
+
   useEffect(() => {
-    axios.get("/col", { params: { id: props.projeto.id } }).then(resp => {
-      console.log("resp", resp.data.result.rows);
-      setColuna(resp.data.result.rows);
-    });
+    axios
+      .get("/col", {
+        params: {
+          id: props.projeto.id
+        }
+      })
+      .then(resp => {
+        console.log("resp", resp.data.result.rows);
+        setColuna(resp.data.result.rows);
+      });
     axios
       .get("/ipc", {
         params: {
-          id: props.projeto.id
+          id: props.projeto.id,
+          dataInicio: periodo.dataInicio,
+          dataFim: periodo.dataFim
         }
       })
       .then(resp => {
         console.log("ipc: ", resp.data);
         setIcp(resp.data.result.rows);
       });
-  }, [props.projeto]);
+  }, [props.projeto, periodo.dataInicio, periodo.dataFim]);
 
   if (!props || !coluna || !coluna[0] || !icp) {
     return null;
@@ -69,12 +87,12 @@ export const Colunas = (props: ColunaProps) => {
   c[0] = {
     name: "Data Início",
     header: "Data Início",
-    render: a => "09/09/2019"
+    render: a => periodo.dataInicio
   };
   c[1] = {
     name: "Data Fim",
     header: "Data Fim",
-    render: a => "16/09/2019"
+    render: a => periodo.dataFim
   };
 
   coluna.forEach((item, index) => {
@@ -100,12 +118,56 @@ export const Colunas = (props: ColunaProps) => {
     return col[0].count;
   };
 
+  const handleChangeDataInicio = (selectedDate: Date) => {
+    setPeriodo({
+      dataInicio: new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "numeric",
+        year: "numeric"
+      }).format(selectedDate),
+      dataFim: periodo.dataFim
+    });
+  };
+
+  const handleChangeDataFim = (selectedDate: Date) =>
+    setPeriodo({
+      dataInicio: periodo.dataInicio,
+      dataFim: new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "numeric",
+        year: "numeric"
+      }).format(selectedDate)
+    });
+
   return (
     <>
-      <DataTable rows={[renderIssue()]} columns={c} />
-
-      <Abertas projeto={props.projeto} />
-      <Fechadas projeto={props.projeto} />
+      <VFlow>
+        <Grid>
+          <Cell size={2} />
+          <Cell size={8}>
+            <VFlow>
+              <HFlow>
+                <DateField
+                  label="Data Início"
+                  name="inicio"
+                  //value={new Date(periodo.dataInicio)}
+                  onChange={handleChangeDataInicio}
+                />
+                <DateField
+                  label="Data Fim"
+                  name="fim"
+                  //value={new Date(periodo.dataFim)}
+                  onChange={handleChangeDataFim}
+                />
+              </HFlow>
+              <DataTable rows={[renderIssue()]} columns={c} />
+            </VFlow>
+          </Cell>
+          <Cell size={2} />
+        </Grid>
+        <Abertas projeto={props.projeto} />
+        <Fechadas projeto={props.projeto} />
+      </VFlow>
     </>
   );
 };

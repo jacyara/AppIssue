@@ -1,10 +1,15 @@
+import { ThemeProvider } from "bold-ui";
 import React from "react";
 import Equipes from "./Equipes";
+import Header from "./Header";
 
 export default function App() {
   return (
     <>
-      <Equipes />
+      <ThemeProvider>
+        <Header />
+        <Equipes />
+      </ThemeProvider>
     </>
   );
 }
