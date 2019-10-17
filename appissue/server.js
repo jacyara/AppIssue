@@ -157,7 +157,7 @@ async function getLabels() {
 
 async function main() {
   const projetos = await getProjects();
-  issuesPorColuna();
+  //issuesPorColuna();
   //pegarEventos();
   //insertLabels();
   // insertCards("4924040");

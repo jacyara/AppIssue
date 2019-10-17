@@ -2,6 +2,7 @@ import axios from "axios";
 import { Cell, DataTable, Grid, VFlow } from "bold-ui";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
+import { Chart } from "react-google-charts";
 import { Projeto } from "./Equipes";
 
 type Fechadas = {
@@ -28,29 +29,40 @@ export const Fechadas = (props: FechadaProps) => {
     return null;
   }
 
-  const renderLeadTime = (row: Fechadas) => {
+  const calculaLeadTime = (row: Fechadas) => {
     const date1 = moment(row.aberta);
     const date2 = moment(row.fechada);
     const diferenca = moment.duration(date2.diff(date1));
     const days = diferenca.asDays();
+    return days;
+  };
+
+  const renderLeadTime = (row: Fechadas) => {
+    const days = calculaLeadTime(row);
     return <span>{days}</span>;
   };
 
-  // const data = [
-  //   fechadas.map(item => {
-  //     [item]
-  //   })
-  //   ["Year", "Visitations", { role: "style" }],
-  //   ["2010", 10, "color: gray"],
-  //   ["2020", 14, "color: #76A7FA"],
-  //   ["2030", 16, "color: blue"],
-  //   ["2040", 22, "stroke-color: #703593; stroke-width: 4; fill-color: #C5A5CF"],
-  //   [
-  //     "2050",
-  //     28,
-  //     "stroke-color: #871B47; stroke-opacity: 0.6; stroke-width: 8; fill-color: #BC5679; fill-opacity: 0.2"
-  //   ]
-  // ];
+  function fillData(fechadas: Fechadas[]) {
+    const data: any[] = [];
+
+    let acum = 0;
+    let i = 0;
+    for (; i < fechadas.length; i++) {
+      let item = fechadas[i];
+      const days = calculaLeadTime(item);
+      acum += days;
+      data.push([
+        "Issue nº: " + item.id + " - " + item.nome,
+        days,
+        days !== 0 ? acum / (i + 1) : days
+      ]);
+    }
+    // fechadas.forEach(item => {
+    //   const days = calculaLeadTime(item);
+    //   data.push(["Issue nº: " + item.id + " - " + item.nome, days, acum / i]);
+    // });
+    return [["Issues", "Dias", "Media"], ...data];
+  }
 
   return (
     <>
@@ -83,7 +95,21 @@ export const Fechadas = (props: FechadaProps) => {
         </Cell>
         <Cell size={2} />
       </Grid>
-      {/* <Chart chartType="BarChart" width="100%" height="400px" data={data} /> */}
+      <Grid>
+        <Cell size={2} />
+        <Cell size={8}>
+          <Chart
+            chartType="ScatterChart"
+            width="100%"
+            height="400px"
+            data={fillData(fechadas)}
+            options={{
+              series: { 1: { type: "line" } }
+            }}
+          />
+        </Cell>
+        <Cell size={2} />
+      </Grid>
     </>
   );
 };
