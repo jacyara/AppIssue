@@ -218,7 +218,7 @@ async function projectExpected(request, response) {
     response.send({ res });
   });
 }
-app.get("/kkk", projectExpected);
+app.get("/equipes", projectExpected);
 
 async function colunasExpected(request, response) {
   var sql = "SELECT coluna.nome FROM coluna WHERE coluna.id_board=$1";

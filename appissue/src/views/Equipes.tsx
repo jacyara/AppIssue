@@ -13,7 +13,7 @@ export default function Equipes() {
   const [statusSelecionado, setstatusSelecionado] = useState<Projeto>();
 
   useEffect(() => {
-    axios.get("/kkk").then(resp => {
+    axios.get("/equipes").then(resp => {
       setProjetos(resp.data.res.rows);
     });
   }, []);

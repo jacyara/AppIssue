@@ -44,7 +44,6 @@ export const Fechadas = (props: FechadaProps) => {
 
   function fillData(fechadas: Fechadas[]) {
     const data: any[] = [];
-
     let acum = 0;
     let i = 0;
     for (; i < fechadas.length; i++) {
@@ -57,12 +56,12 @@ export const Fechadas = (props: FechadaProps) => {
         days !== 0 ? acum / (i + 1) : days
       ]);
     }
-    // fechadas.forEach(item => {
-    //   const days = calculaLeadTime(item);
-    //   data.push(["Issue nº: " + item.id + " - " + item.nome, days, acum / i]);
-    // });
     return [["Issues", "Dias", "Media"], ...data];
   }
+        // fechadas.forEach(item => {
+        //   const days = calculaLeadTime(item);
+        //   data.push(["Issue nº: " + item.id + " - " + item.nome, days, acum / i]);
+        // });
 
   return (
     <>

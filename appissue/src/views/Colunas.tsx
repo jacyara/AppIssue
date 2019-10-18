@@ -3,6 +3,7 @@ import { Cell, DataTable, DateField, Grid, HFlow, VFlow } from "bold-ui";
 import { TableColumnConfig } from "bold-ui/lib/components/Table/DataTable/DataTable";
 import React, { useEffect, useState } from "react";
 import { Abertas } from "./Abertas";
+import CFD from "./CFD";
 import { Projeto } from "./Equipes";
 import { Fechadas } from "./Fechadas";
 
@@ -167,6 +168,13 @@ export const Colunas = (props: ColunaProps) => {
         </Grid>
         <Abertas projeto={props.projeto} />
         <Fechadas projeto={props.projeto} />
+        <Grid>
+          <Cell size={2} />
+          <Cell size={8}>
+            <CFD projeto={props.projeto} />
+          </Cell>
+          <Cell size={2} />
+        </Grid>
       </VFlow>
     </>
   );
