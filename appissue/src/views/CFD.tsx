@@ -35,7 +35,19 @@ export const CFD = (props: ColunaProps) => {
   const [icp3, setIcp3] = useState<Icp3[]>();
   const [icp4, setIcp4] = useState<Icp4[]>();
 
+  const [coluna, setColuna] = useState<Coluna[]>();
+
   useEffect(() => {
+    axios
+      .get("/col", {
+        params: {
+          id: props.projeto.id
+        }
+      })
+      .then(resp => {
+        console.log("resp", resp.data.result.rows);
+        setColuna(resp.data.result.rows);
+      });
     axios
       .get("/ipc", {
         params: {
@@ -86,70 +98,80 @@ export const CFD = (props: ColunaProps) => {
       });
   }, [props.projeto]);
 
-  if (!props || !icp2 || !icp3 || !icp1 || !icp4) {
+  if (!props || !icp2 || !icp3 || !icp1 || !icp4 || !coluna) {
     return null;
   }
 
-  function fillColumns(icp: Icp1[]) {
+  function fillColumns(coluna: Coluna[]): GoogleDataTableColumn[] {
     const data: any[] = [];
-    icp.forEach(item => {
-      data.push([
-        {
-          label: item.coluna + "",
-          type: "string"
-        }
-      ]);
+    coluna.map(item => {
+      data.push({
+        label: item.nome,
+        type: "number"
+      });
     });
+    console.log(data);
     return [
-      [
-        {
-          label: "Semana",
-          type: "string"
-        }
-      ],
+      {
+        label: "Semana",
+        type: "string"
+      },
       ...data
     ];
   }
+
   const columns: GoogleDataTableColumn[] = [];
 
-  function fillrows(icp: Icp1[], icp2: Icp2[], icp3: Icp3[], icp4: Icp4[]) {
-    const datacol: any[] = [];
-    icp.forEach(item => {
-      datacol.push(item.coluna + "");
-    });
+  const countIssue = (name: string, icp: Icp1[]) => {
+    var col = icp.filter(x => x.coluna === name);
+    if (col.length === 0) {
+      return 0;
+    }
+    return col[0].count;
+  };
 
-    const data: any[] = [];
-    icp.forEach(item => {
-      const count: number = +item.count;
-      data.push(count);
-      console.log(count);
+  function fillrows(
+    coluna: Coluna[],
+    icp: Icp1[],
+    icp2: Icp2[],
+    icp3: Icp3[],
+    icp4: Icp4[]
+  ) {
+    const data1: any[] = [];
+    coluna.map(item => {
+      const count: number = +countIssue(item.nome, icp);
+      data1.push(count);
     });
-
+    console.log(data1);
     const data2: any[] = [];
-    icp2.forEach(item => {
-      const count: number = +item.count;
+    coluna.map(item => {
+      const count: number = +countIssue(item.nome, icp2);
       data2.push(count);
     });
 
     const data3: any[] = [];
-    icp3.forEach(item => {
-      const count: number = +item.count;
+    coluna.map(item => {
+      const count: number = +countIssue(item.nome, icp3);
       data3.push(count);
     });
 
     const data4: any[] = [];
-    icp4.forEach(item => {
-      const count: number = +item.count;
+    coluna.map(item => {
+      const count: number = +countIssue(item.nome, icp4);
       data4.push(count);
     });
-    console.log(["09/09/2019", ...data]);
+
     return [
-      ["02/09/2019", ...data],
-      ["09/09/2019", ...data2]
-      //["16/09/2019", ...data3]
-      // ["23/09/2019", ...data4]
+      ["02/09/2019", ...data1],
+      ["09/09/2019", ...data2],
+      ["16/09/2019", ...data3],
+      ["23/09/2019", ...data4]
     ];
   }
+
+  const options = {
+    title: "Cumulative flow diagram"
+  };
 
   return (
     <Chart
@@ -157,8 +179,9 @@ export const CFD = (props: ColunaProps) => {
       width="100%"
       height="400px"
       legendToggle
-      rows={fillrows(icp1, icp2, icp3, icp4)}
-      columns={fillColumns(icp1)}
+      options={options}
+      rows={fillrows(coluna, icp1, icp2, icp3, icp4)}
+      columns={fillColumns(coluna)}
     />
   );
 };

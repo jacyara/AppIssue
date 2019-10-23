@@ -49,19 +49,19 @@ export const Fechadas = (props: FechadaProps) => {
     for (; i < fechadas.length; i++) {
       let item = fechadas[i];
       const days = calculaLeadTime(item);
-      acum += days;
+      acum += days !== 0 ? days : 0;
       data.push([
         "Issue nº: " + item.id + " - " + item.nome,
         days,
-        days !== 0 ? acum / (i + 1) : days
+        acum / (i + 1)
       ]);
     }
     return [["Issues", "Dias", "Media"], ...data];
   }
-        // fechadas.forEach(item => {
-        //   const days = calculaLeadTime(item);
-        //   data.push(["Issue nº: " + item.id + " - " + item.nome, days, acum / i]);
-        // });
+  // fechadas.forEach(item => {
+  //   const days = calculaLeadTime(item);
+  //   data.push(["Issue nº: " + item.id + " - " + item.nome, days, acum / i]);
+  // });
 
   return (
     <>
@@ -103,6 +103,7 @@ export const Fechadas = (props: FechadaProps) => {
             height="400px"
             data={fillData(fechadas)}
             options={{
+              title: "Gráfico de Lead time das issues",
               series: { 1: { type: "line" } }
             }}
           />

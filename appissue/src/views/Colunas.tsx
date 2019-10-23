@@ -1,5 +1,13 @@
 import axios from "axios";
-import { Cell, DataTable, DateField, Grid, HFlow, VFlow } from "bold-ui";
+import {
+  Button,
+  Cell,
+  DataTable,
+  DateField,
+  Grid,
+  HFlow,
+  VFlow
+} from "bold-ui";
 import { TableColumnConfig } from "bold-ui/lib/components/Table/DataTable/DataTable";
 import React, { useEffect, useState } from "react";
 import { Abertas } from "./Abertas";
@@ -25,6 +33,15 @@ interface Periodo {
   dataFim: string;
 }
 
+interface PeriodoColetado {
+  dataInicio: Date;
+  dataFim: Date;
+}
+
+interface Atualizar {
+  atualizar: boolean;
+}
+
 export const Colunas = (props: ColunaProps) => {
   const [coluna, setColuna] = useState<Coluna[]>();
 
@@ -33,6 +50,15 @@ export const Colunas = (props: ColunaProps) => {
   const [periodo, setPeriodo] = useState<Periodo>({
     dataInicio: "09/09/2019",
     dataFim: "16/09/2019"
+  });
+
+  const [atualizar, setAtualizar] = useState<Atualizar>({
+    atualizar: false
+  });
+
+  const [periodoColetado, setPeriodoColetado] = useState<PeriodoColetado>({
+    dataInicio: new Date("09/09/2019"),
+    dataFim: new Date("09/16/2019")
   });
 
   useEffect(() => {
@@ -58,7 +84,7 @@ export const Colunas = (props: ColunaProps) => {
         console.log("ipc: ", resp.data);
         setIcp(resp.data.result.rows);
       });
-  }, [props.projeto, periodo.dataInicio, periodo.dataFim]);
+  }, [props.projeto, periodo]);
 
   if (!props || !coluna || !coluna[0] || !icp) {
     return null;
@@ -107,7 +133,6 @@ export const Colunas = (props: ColunaProps) => {
   const renderIssue = () => {
     let issues = new Map();
     coluna.map(item => issues.set(item.nome, countIssue(item.nome)));
-    console.log(issues);
     return issues;
   };
 
@@ -121,24 +146,40 @@ export const Colunas = (props: ColunaProps) => {
 
   const handleChangeDataInicio = (selectedDate: Date) => {
     setPeriodo({
-      dataInicio: new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit",
-        month: "numeric",
-        year: "numeric"
-      }).format(selectedDate),
+      dataInicio: dateToString(selectedDate),
       dataFim: periodo.dataFim
+    });
+    console.log("handleChangeDataInicio()", periodoColetado);
+    setPeriodoColetado({
+      dataInicio: selectedDate,
+      dataFim: periodoColetado.dataFim
     });
   };
 
-  const handleChangeDataFim = (selectedDate: Date) =>
+  const handleChangeDataFim = (selectedDate: Date) => {
     setPeriodo({
       dataInicio: periodo.dataInicio,
-      dataFim: new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit",
-        month: "numeric",
-        year: "numeric"
-      }).format(selectedDate)
+      dataFim: dateToString(selectedDate)
     });
+    setPeriodoColetado({
+      dataInicio: periodoColetado.dataInicio,
+      dataFim: selectedDate
+    });
+  };
+
+  function dateToString(date: Date) {
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "numeric",
+      year: "numeric"
+    }).format(date);
+  }
+
+  function onClickHandle() {
+    setAtualizar({
+      atualizar: true
+    });
+  }
 
   return (
     <>
@@ -151,13 +192,13 @@ export const Colunas = (props: ColunaProps) => {
                 <DateField
                   label="Data Início"
                   name="inicio"
-                  //value={new Date(periodo.dataInicio)}
+                  value={periodoColetado.dataInicio}
                   onChange={handleChangeDataInicio}
                 />
                 <DateField
                   label="Data Fim"
                   name="fim"
-                  //value={new Date(periodo.dataFim)}
+                  value={periodoColetado.dataFim}
                   onChange={handleChangeDataFim}
                 />
               </HFlow>
@@ -166,13 +207,23 @@ export const Colunas = (props: ColunaProps) => {
           </Cell>
           <Cell size={2} />
         </Grid>
+        <Grid>
+          <Cell size={9} />
+          <Button
+            skin="outline"
+            size="medium"
+            kind="primary"
+            onClick={onClickHandle}
+          >
+            {" "}
+            Atualizar!{" "}
+          </Button>
+        </Grid>
         <Abertas projeto={props.projeto} />
         <Fechadas projeto={props.projeto} />
         <Grid>
           <Cell size={2} />
-          <Cell size={8}>
-            <CFD projeto={props.projeto} />
-          </Cell>
+          <Cell size={8}>{<CFD projeto={props.projeto} />}</Cell>
           <Cell size={2} />
         </Grid>
       </VFlow>

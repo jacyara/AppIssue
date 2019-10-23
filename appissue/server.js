@@ -203,7 +203,7 @@ async function projectExpected(request, response) {
           client.query(sql, [item.id, item.name], function(err, result) {
             try {
               if (err) throw err;
-              console.log("Number of records inserted: " + result.affectedRows);
+              // console.log("Number of records inserted: " + result.affectedRows);
             } catch (error) {
               console.log(error);
             }
@@ -225,7 +225,7 @@ async function colunasExpected(request, response) {
   client.query(sql, [request.query.id], function(err, result) {
     try {
       if (err) throw err;
-      console.log("Number of records inserted: " + result.affectedRows);
+      // console.log("Number of records inserted: " + result.affectedRows);
     } catch (error) {
       console.log(error);
     }
@@ -258,195 +258,219 @@ async function insertColumns(projectId) {
 async function pegarEventos() {
   let i = 0;
   let eventos = await getEvents(i);
-  do {
-    eventos.map(evento => {
-      switch (evento.event) {
-        case "closed": {
-          console.log(evento.event);
-          client.query(
-            "INSERT INTO eventos (id, evento, created, id_issue) values ($1, $2, $3, $4)",
-            [evento.id, evento.event, evento.created_at, evento.issue.number],
-            function(err, result) {
-              try {
-                if (err) throw err;
-                console.log(
-                  "Number of records inserted: " + result.affectedRows
-                );
-              } catch (error) {
-                console.log(error);
-              }
-            }
-          );
-          break;
+  let idsJaSalvos = [];
+  var sql = "select id from eventos";
+  client.query(sql, async function(err, result) {
+    try {
+      if (err) throw err;
+    } catch (error) {
+      console.log(error);
+    }
+    idsJaSalvos = result;
+
+    do {
+      // console.log("swswsw", result.rows.length);
+      eventos.map(evento => {
+        // result.rows.forEach(resultado => {
+        //   if (resultado.id === evento.id) {
+        //     console.log("DHUIDHOIHDWGWD");
+        //     return;
+        //   }
+        // });
+        console.log(evento.id);
+        console.log(result.rows.includes(evento.id));
+        if (result.rows.includes(evento.id)) {
+          console.log("ja Existe");
+          return;
         }
-        case "added_to_project": {
-          //console.log(evento.event);
-          insertIssues(evento);
-          insertCards(evento);
-          client.query(
-            "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto) values ($1, $2, $3, $4, $5, $6, $7)",
-            [
-              evento.id,
-              evento.event,
-              evento.created_at,
-              evento.issue.number,
-              evento.project_card.id,
-              evento.project_card.column_name,
-              evento.project_card.project_id
-            ],
-            function(err, result) {
-              try {
-                if (err) throw err;
-                console.log(
-                  "Number of records inserted: " + result.affectedRows
-                );
-              } catch (error) {
-                console.log(error);
+        switch (evento.event) {
+          case "closed": {
+            console.log(evento.event);
+            client.query(
+              "INSERT INTO eventos (id, evento, created, id_issue) values ($1, $2, $3, $4)",
+              [evento.id, evento.event, evento.created_at, evento.issue.number],
+              function(err, result) {
+                try {
+                  if (err) throw err;
+                  console.log(
+                    "Number of records inserted: " + result.affectedRows
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
               }
-            }
-          );
-          break;
-        }
-        case "converted_note_to_issue": {
-          console.log(evento.event);
-          insertIssues(evento);
-          insertCards(evento);
-          client.query(
-            "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto) values ($1, $2, $3, $4, $5, $6, $7)",
-            [
-              evento.id,
-              evento.event,
-              evento.created_at,
-              evento.issue.number,
-              evento.project_card.id,
-              evento.project_card.column_name,
-              evento.project_card.project_id
-            ],
-            function(err, result) {
-              try {
-                if (err) throw err;
-                console.log(
-                  "Number of records inserted: " + result.affectedRows
-                );
-              } catch (error) {
-                console.log(error);
+            );
+            break;
+          }
+          case "added_to_project": {
+            //console.log(evento.event);
+            insertIssues(evento);
+            insertCards(evento);
+            client.query(
+              "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto) values ($1, $2, $3, $4, $5, $6, $7)",
+              [
+                evento.id,
+                evento.event,
+                evento.created_at,
+                evento.issue.number,
+                evento.project_card.id,
+                evento.project_card.column_name,
+                evento.project_card.project_id
+              ],
+              function(err, result) {
+                try {
+                  if (err) throw err;
+                  console.log(
+                    "Number of records inserted: " + result.affectedRows
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
               }
-            }
-          );
-          break;
-        }
-        case "moved_columns_in_project": {
-          console.log(evento.event);
-          client.query(
-            "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto, coluna_anterior) values ($1, $2, $3, $4, $5, $6, $7, $8)",
-            [
-              evento.id,
-              evento.event,
-              evento.created_at,
-              evento.issue.number,
-              evento.project_card.id,
-              evento.project_card.column_name,
-              evento.project_card.project_id,
-              evento.project_card.previous_column_name
-            ],
-            function(err, result) {
-              try {
-                if (err) throw err;
-                console.log(
-                  "Number of records inserted: " + result.affectedRows
-                );
-              } catch (error) {
-                console.log(error);
+            );
+            break;
+          }
+          case "converted_note_to_issue": {
+            console.log(evento.event);
+            insertIssues(evento);
+            insertCards(evento);
+            client.query(
+              "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto) values ($1, $2, $3, $4, $5, $6, $7)",
+              [
+                evento.id,
+                evento.event,
+                evento.created_at,
+                evento.issue.number,
+                evento.project_card.id,
+                evento.project_card.column_name,
+                evento.project_card.project_id
+              ],
+              function(err, result) {
+                try {
+                  if (err) throw err;
+                  console.log(
+                    "Number of records inserted: " + result.affectedRows
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
               }
-            }
-          );
-          break;
-        }
-        case "removed_from_project": {
-          client.query(
-            "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto) values ($1, $2, $3, $4, $5, $6, $7)",
-            [
-              evento.id,
-              evento.event,
-              evento.created_at,
-              evento.issue.number,
-              evento.project_card.id,
-              evento.project_card.column_name,
-              evento.project_card.project_id
-            ],
-            function(err, result) {
-              try {
-                if (err) throw err;
-                console.log(
-                  "Number of records inserted: " + result.affectedRows
-                );
-              } catch (error) {
-                console.log(error);
+            );
+            break;
+          }
+          case "moved_columns_in_project": {
+            console.log(evento.event);
+            client.query(
+              "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto, coluna_anterior) values ($1, $2, $3, $4, $5, $6, $7, $8)",
+              [
+                evento.id,
+                evento.event,
+                evento.created_at,
+                evento.issue.number,
+                evento.project_card.id,
+                evento.project_card.column_name,
+                evento.project_card.project_id,
+                evento.project_card.previous_column_name
+              ],
+              function(err, result) {
+                try {
+                  if (err) throw err;
+                  console.log(
+                    "Number of records inserted: " + result.affectedRows
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
               }
-            }
-          );
-          break;
-        }
-        case "reopened": {
-          client.query(
-            "INSERT INTO eventos (id, evento, created, id_issue) values ($1, $2, $3, $4)",
-            [evento.id, evento.event, evento.created_at, evento.issue.number],
-            function(err, result) {
-              try {
-                if (err) throw err;
-                console.log(
-                  "Number of records inserted: " + result.affectedRows
-                );
-              } catch (error) {
-                console.log(error);
+            );
+            break;
+          }
+          case "removed_from_project": {
+            client.query(
+              "INSERT INTO eventos (id, evento, created, id_issue, id_card, coluna, id_projeto) values ($1, $2, $3, $4, $5, $6, $7)",
+              [
+                evento.id,
+                evento.event,
+                evento.created_at,
+                evento.issue.number,
+                evento.project_card.id,
+                evento.project_card.column_name,
+                evento.project_card.project_id
+              ],
+              function(err, result) {
+                try {
+                  if (err) throw err;
+                  console.log(
+                    "Number of records inserted: " + result.affectedRows
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
               }
-            }
-          );
-          break;
-        }
-        case "labeled": {
-          //console.log(evento);
-          client.query(
-            "INSERT INTO rl_label_issue (id_issue, coluna) values ($1, $2)",
-            [evento.issue.number, evento.label.name],
-            function(err, result) {
-              try {
-                if (err) throw err;
-                console.log(
-                  "Number of records inserted: " + result.affectedRows
-                );
-              } catch (error) {
-                console.log(error);
+            );
+            break;
+          }
+          case "reopened": {
+            client.query(
+              "INSERT INTO eventos (id, evento, created, id_issue) values ($1, $2, $3, $4)",
+              [evento.id, evento.event, evento.created_at, evento.issue.number],
+              function(err, result) {
+                try {
+                  if (err) throw err;
+                  console.log(
+                    "Number of records inserted: " + result.affectedRows
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
               }
-            }
-          );
-          break;
-        }
-        case "unlabeled": {
-          console.log(evento);
-          client.query(
-            "DELETE FROM rl_label_issue where id_issue=$1 and coluna=$2",
-            [evento.issue.number, evento.label.name],
-            function(err, result) {
-              try {
-                if (err) throw err;
-                console.log(
-                  "Number of records inserted: " + result.affectedRows
-                );
-              } catch (error) {
-                console.log(error);
+            );
+            break;
+          }
+          case "labeled": {
+            //console.log(evento);
+            client.query(
+              "INSERT INTO rl_label_issue (id_issue, coluna) values ($1, $2)",
+              [evento.issue.number, evento.label.name],
+              function(err, result) {
+                try {
+                  if (err) throw err;
+                  console.log(
+                    "Number of records inserted: " + result.affectedRows
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
               }
-            }
-          );
-          break;
+            );
+            break;
+          }
+          case "unlabeled": {
+            console.log(evento);
+            client.query(
+              "DELETE FROM rl_label_issue where id_issue=$1 and coluna=$2",
+              [evento.issue.number, evento.label.name],
+              function(err, result) {
+                try {
+                  if (err) throw err;
+                  console.log(
+                    "Number of records inserted: " + result.affectedRows
+                  );
+                } catch (error) {
+                  console.log(error);
+                }
+              }
+            );
+            break;
+          }
+          default:
+            break;
         }
-        default:
-          break;
-      }
-    });
-    i++;
-    eventos = await getEvents(i);
-  } while (i < 509);
+      });
+      i++;
+      eventos = await getEvents(i);
+    } while (i < 509);
+  });
 
   //console.log("Eventos: ", eventos.length);
 }
@@ -463,7 +487,7 @@ async function insertIssues(evento) {
     async function(err, result) {
       try {
         if (err) throw err;
-        console.log("Number of records inserted: " + result.affectedRows);
+        //console.log("Number of records inserted: " + result.affectedRows);
       } catch (error) {
         console.log(error);
       }
@@ -490,7 +514,7 @@ async function insertCards(evento) {
     function(err, result) {
       try {
         if (err) throw err;
-        console.log("Number of records inserted: " + result.affectedRows);
+        //console.log("Number of records inserted: " + result.affectedRows);
       } catch (error) {
         console.log(error);
       }
@@ -527,7 +551,7 @@ async function issuesPorColuna(request, response) {
     sql,
     [request.query.id, request.query.dataInicio, request.query.dataFim],
     function(err, result) {
-      console.log("AQUIIIIIIIIIIIHSAHSA           ", request.query);
+      //console.log("AQUIIIIIIIIIIIHSAHSA           ", request.query);
       try {
         if (err) throw err;
       } catch (error) {
@@ -575,69 +599,24 @@ async function issuesFechadas(request, response) {
 
 app.get("/fechadas", issuesFechadas);
 
-// Heroku
-// const client = new Client({
-//   //connectionString: process.env.DATABASE_URL,
-//   //ssl: true
-// });
+//idEventos();
 
-// client.connect();
-// console.log(client);
+//pegarEventos();
 
-// client.query(
-//   "SELECT table_schema,table_name FROM information_schema.tables;",
-//   (err, res) => {
-//     if (err) throw err;
-//     for (let row of res.rows) {
-//       console.log(JSON.stringify(row));
-//     }
-//     client.end();
-//   }
-// );
-
-// const con = mysql.createConnection({
-//   host: "localhost",
-//   user: "root",
-//   password: "1234"
-// });
-
-// const connection = () => {
-//   con.connect(function(err) {
-//     if (err) throw err;
-//     console.log("Connected!");
-//   });
-// };
+async function idEventos() {
+  var sql = "select id from eventos";
+  client.query(sql, function(err, result) {
+    try {
+      if (err) throw err;
+    } catch (error) {
+      console.log(error);
+    }
+    return result;
+  });
+}
 
 const baseDir = `${__dirname}/build/`;
 // we've started you off with Express,
 // but feel free to use whatever libs or frameworks you'd like through `package.json`.
 //http://expressjs.com/en/starter/static-files.html
 app.use(express.static(baseDir));
-
-//expressjs.com/en/starter/basic-routing.html
-// http: app.get("/", function(request, response) {
-//   response.sendFile(__dirname + "/build/index.html");
-// });
-
-//app.post("/issue", function(request, response, next) {
-// request.on("data", function(data) {
-//   console.log("Dados da Issue: ");
-//   console.log("Ação: " + JSON.parse("" + data).action);
-//   console.log(
-//     "Nome: " +
-//       JSON.parse("" + data).issue.title +
-//       " Número: " +
-//       JSON.parse("" + data).issue.number
-//   );
-//   console.log("Label: " + JSON.parse("" + data).issue.labels);
-// });
-// response.send("OK");
-//});
-
-// listen for requests :)
-// const listener = app.listen(process.env.PORT, function() {
-//   //connection();
-//   console.log(
-//     "Your app is listening on port http://localhost:" + listener.address().port
-//   );
-// });
