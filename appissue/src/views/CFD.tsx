@@ -138,29 +138,19 @@ export const CFD = (props: ColunaProps) => {
     icp4: Icp4[]
   ) {
     const data1: any[] = [];
-    coluna.map(item => {
-      const count: number = +countIssue(item.nome, icp);
-      data1.push(count);
-    });
-    console.log(data1);
     const data2: any[] = [];
-    coluna.map(item => {
-      const count: number = +countIssue(item.nome, icp2);
-      data2.push(count);
-    });
-
     const data3: any[] = [];
-    coluna.map(item => {
-      const count: number = +countIssue(item.nome, icp3);
-      data3.push(count);
-    });
-
     const data4: any[] = [];
-    coluna.map(item => {
-      const count: number = +countIssue(item.nome, icp4);
-      data4.push(count);
+    coluna.map(item1 => {
+      const count1: number = +countIssue(item1.nome, icp);
+      data1.push(count1);
+      const count2: number = +countIssue(item1.nome, icp2) + count1;
+      data2.push(count2);
+      const count3: number = +countIssue(item1.nome, icp3) + count2;
+      data3.push(count3);
+      const count4: number = +countIssue(item1.nome, icp4) + count3;
+      data4.push(count4);
     });
-
     return [
       ["02/09/2019", ...data1],
       ["09/09/2019", ...data2],
