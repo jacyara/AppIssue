@@ -587,10 +587,7 @@ async function issuesFechadas(request, response) {
   var sql =
     "select distinct issue.id, issue.nome, eventos.evento, eventos.created as fechada, cards.created as aberta from eventos join issue on eventos.id_issue = issue.id " +
     "inner join cards on issue.id = cards.number_issue where cards.project_id=$1 and eventos.evento='closed' and id_issue not in (select id_issue from eventos where evento='reopened')";
-  client.query(sql, [request.query.id, request.query.dataFim], function(
-    err,
-    result
-  ) {
+  client.query(sql, [request.query.id], function(err, result) {
     try {
       if (err) throw err;
     } catch (error) {

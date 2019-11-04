@@ -63,6 +63,16 @@ export const Fechadas = (props: FechadaProps) => {
   //   data.push(["Issue nº: " + item.id + " - " + item.nome, days, acum / i]);
   // });
 
+  const dataT = [
+    ["Element", "Issues fechadas", { role: "style" }],
+    ["02/09/2019", 9],
+    ["09/09/2019", 3],
+    ["16/09/2019", 7],
+    ["23/09/2019", 2],
+    ["30/09/2019", 5],
+    ["07/10/2019", 2]
+  ];
+
   return (
     <>
       <Grid>
@@ -110,6 +120,7 @@ export const Fechadas = (props: FechadaProps) => {
         </Cell>
         <Cell size={2} />
       </Grid>
+      <Chart chartType="ColumnChart" width="100%" height="400px" data={dataT} />
     </>
   );
 };

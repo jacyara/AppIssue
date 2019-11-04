@@ -14,6 +14,7 @@ import { Abertas } from "./Abertas";
 import CFD from "./CFD";
 import { Projeto } from "./Equipes";
 import { Fechadas } from "./Fechadas";
+import Throughput from "./Throughput";
 
 type Coluna = {
   nome: string;
@@ -224,6 +225,11 @@ export const Colunas = (props: ColunaProps) => {
         <Grid>
           <Cell size={2} />
           <Cell size={8}>{<CFD projeto={props.projeto} />}</Cell>
+          <Cell size={2} />
+        </Grid>
+        <Grid>
+          <Cell size={2} />
+          <Cell size={8}>{<Throughput />}</Cell>
           <Cell size={2} />
         </Grid>
       </VFlow>
