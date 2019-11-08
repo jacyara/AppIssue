@@ -29,7 +29,6 @@ export default function Equipes() {
   const handleOnChange = (item: Projeto) => {
     setstatusSelecionado(item);
   };
-  function onClickHandle() {}
 
   return (
     <>
@@ -37,14 +36,14 @@ export default function Equipes() {
         <Grid>
           <Cell size={2} />
           <Cell size={8}>
-                <Select<Projeto>
-                  items={projetos}
-                  label="Selecione a equipe ágil"
-                  onChange={handleOnChange}
-                  itemToString={itemToString}
-                  name="equipes"
-                  clearable={false}
-                />
+            <Select<Projeto>
+              items={projetos}
+              label="Selecione a equipe ágil"
+              onChange={handleOnChange}
+              itemToString={itemToString}
+              name="equipes"
+              clearable={false}
+            />
           </Cell>
           <Cell size={2} />
         </Grid>

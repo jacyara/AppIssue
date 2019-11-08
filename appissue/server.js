@@ -258,7 +258,6 @@ async function insertColumns(projectId) {
 async function pegarEventos() {
   let i = 0;
   let eventos = await getEvents(i);
-  let idsJaSalvos = [];
   var sql = "select id from eventos";
   client.query(sql, async function(err, result) {
     try {
@@ -269,14 +268,7 @@ async function pegarEventos() {
     idsJaSalvos = result;
 
     do {
-      // console.log("swswsw", result.rows.length);
       eventos.map(evento => {
-        // result.rows.forEach(resultado => {
-        //   if (resultado.id === evento.id) {
-        //     console.log("DHUIDHOIHDWGWD");
-        //     return;
-        //   }
-        // });
         console.log(evento.id);
         console.log(result.rows.includes(evento.id));
         if (result.rows.includes(evento.id)) {
@@ -475,6 +467,8 @@ async function pegarEventos() {
   //console.log("Eventos: ", eventos.length);
 }
 
+app.get("/eventos", pegarEventos);
+
 async function insertIssues(evento) {
   client.query(
     "INSERT INTO issue (id, nome, estado, modificacao) values ($1, $2, $3, $4)",
@@ -602,10 +596,29 @@ app.get("/fechadas", issuesFechadas);
 async function thoughputAcumulado(request, response) {
   var sql =
     "select count(*) from eventos join issue on eventos.id_issue = issue.id inner join cards on issue.id = cards.number_issue " +
-    "where cards.project_id=$1 and eventos.evento = 'closed' and eventos.created <= to_date($2, 'dd/mm/yyyy') " +
+    "where cards.project_id=$1 and eventos.evento = 'closed' and eventos.created between to_date($2, 'dd/mm/yyyy') and to_date($3, 'dd/mm/yyyy')" +
     "and id_issue not in( select id_issue from eventos where evento = 'reopened') ";
 
-  client.query(sql, [request.query.id], function(err, result) {
+  client.query(
+    sql,
+    [request.query.id, request.query.dataInicio, request.query.dataFim],
+    function(err, result) {
+      try {
+        if (err) throw err;
+      } catch (error) {
+        console.log(error);
+      }
+      response.send({ result });
+    }
+  );
+}
+
+app.get("/acumulado", thoughputAcumulado);
+
+async function todasLabels(request, response) {
+  var sql = "select * from label";
+
+  client.query(sql, function(err, result) {
     try {
       if (err) throw err;
     } catch (error) {
@@ -615,7 +628,39 @@ async function thoughputAcumulado(request, response) {
   });
 }
 
-app.get("/acumulado", thoughputAcumulado);
+app.get("/labels", todasLabels);
+
+async function issuesOpenByLabel(request, response) {
+  var sql =
+    "select count(id_issue) from rl_label_issue rl join issue issue on rl.id_issue = issue.id where coluna=$1  and estado = 'open'";
+
+  client.query(sql, [request.query.label], function(err, result) {
+    try {
+      if (err) throw err;
+    } catch (error) {
+      console.log(error);
+    }
+    response.send({ result });
+  });
+}
+
+app.get("/open", issuesOpenByLabel);
+
+async function concluidasByLabel(request, response) {
+  var sql =
+    "select count(id_issue) from rl_label_issue rl join issue issue on rl.id_issue = issue.id where coluna=$1  and estado = 'closed'";
+
+  client.query(sql, [request.query.label], function(err, result) {
+    try {
+      if (err) throw err;
+    } catch (error) {
+      console.log(error);
+    }
+    response.send({ result });
+  });
+}
+
+app.get("/concluidas", concluidasByLabel);
 
 //idEventos();
 

@@ -1,10 +1,60 @@
-import { Tag, VFlow } from "bold-ui";
-import React from "react";
+import axios from "axios";
+import { Cell, Grid, VFlow } from "bold-ui";
+import React, { useEffect, useState } from "react";
 import { Chart } from "react-google-charts";
 
-export const Modulo = () => {
+type Open = {
+  count: number;
+};
+
+type Concluidas = {
+  count: number;
+};
+
+interface ColunaProps {
+  nome: Label;
+}
+
+export type Label = {
+  id: number;
+  nome: string;
+};
+
+export const Modulo = (props: ColunaProps) => {
+  const [open, setOpen] = useState<Open[]>();
+  const [concluidas, setConcluidas] = useState<Concluidas[]>();
+  const [labelSelecionada, setLabelSelecionada] = useState<Label>();
+
+  useEffect(() => {
+    axios
+      .get("/open", {
+        params: {
+          label: props.nome.nome
+        }
+      })
+      .then(resp => {
+        setOpen(resp.data.result.rows);
+        console.log("Aberta", resp.data.result.rows);
+        console.log(props.nome.nome);
+      });
+    axios
+      .get("/concluidas", {
+        params: {
+          label: props.nome.nome
+        }
+      })
+      .then(resp => {
+        setConcluidas(resp.data.result.rows);
+        console.log("Concluidas", resp.data.result.rows);
+        console.log(props.nome.nome);
+      });
+  }, [props.nome]);
+
+  if (!props || !open || !open[0] || !concluidas || !concluidas[0]) {
+    return null;
+  }
+
   const pieOptions = {
-    title: "Porcentagem do módulo pronto",
     pieHole: 0.6,
     slices: [
       {
@@ -39,21 +89,30 @@ export const Modulo = () => {
     },
     fontName: "Roboto"
   };
+  const itemToString = (item: Label | null) => {
+    if (!item) return "";
+    return item.nome;
+  };
+  const handleOnChange = (item: Label) => {
+    setLabelSelecionada(item);
+  };
   return (
     <>
-      <VFlow>
-        <h3>Porcentagem do módulo pronto</h3>
-
-        <Tag>Lista de Atendimentos</Tag>
-      </VFlow>
+      {+concluidas[0].count === 0 && +open[0].count === 0 && (
+        <Grid>
+          <Cell size={5} />
+          <Cell size={7}>
+            <h3>Essa label não está atrelada a nenhuma issue</h3>
+          </Cell>
+        </Grid>
+      )}
+      <VFlow></VFlow>
       <Chart
         chartType="PieChart"
         data={[
-          ["Age", "Weight"],
-          ["Finalizadas", 3],
-          ["Em desenvolvimento", 2],
-          ["Code Review", 1],
-          ["Sprint Backlog", 4]
+          ["Status", "Quantidade"],
+          ["Finalizadas", +concluidas[0].count],
+          ["Em desenvolvimento", +open[0].count]
         ]}
         options={pieOptions}
         graph_id="PieChart"

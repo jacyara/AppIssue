@@ -14,6 +14,8 @@ import { Abertas } from "./Abertas";
 import CFD from "./CFD";
 import { Projeto } from "./Equipes";
 import { Fechadas } from "./Fechadas";
+import LeadTime from "./LeadTime";
+import ModuloEscolha from "./ModuloEscolha";
 import Throughput from "./Throughput";
 
 type Coluna = {
@@ -57,6 +59,8 @@ export const Colunas = (props: ColunaProps) => {
     atualizar: false
   });
 
+  console.log("Botao", atualizar);
+
   const [periodoColetado, setPeriodoColetado] = useState<PeriodoColetado>({
     dataInicio: new Date("09/09/2019"),
     dataFim: new Date("09/16/2019")
@@ -85,7 +89,10 @@ export const Colunas = (props: ColunaProps) => {
         console.log("ipc: ", resp.data);
         setIcp(resp.data.result.rows);
       });
-  }, [props.projeto, periodo]);
+    if (atualizar.atualizar.valueOf()) {
+      axios.get("/eventos").then(resp => {});
+    }
+  }, [props.projeto, periodo, atualizar]);
 
   if (!props || !coluna || !coluna[0] || !icp) {
     return null;
@@ -175,13 +182,11 @@ export const Colunas = (props: ColunaProps) => {
       year: "numeric"
     }).format(date);
   }
-
   function onClickHandle() {
     setAtualizar({
       atualizar: true
     });
   }
-
   return (
     <>
       <VFlow>
@@ -223,14 +228,28 @@ export const Colunas = (props: ColunaProps) => {
         <Abertas projeto={props.projeto} />
         <Fechadas projeto={props.projeto} />
         <Grid>
-          <Cell size={2} />
-          <Cell size={8}>{<CFD projeto={props.projeto} />}</Cell>
-          <Cell size={2} />
+          <Cell size={3} />
+          <Cell size={6}>{<LeadTime projeto={props.projeto} />}</Cell>
+          <Cell size={3} />
         </Grid>
         <Grid>
-          <Cell size={2} />
-          <Cell size={8}>{<Throughput />}</Cell>
-          <Cell size={2} />
+          <Cell size={3} />
+          <Cell size={6}>{<CFD projeto={props.projeto} />}</Cell>
+          <Cell size={3} />
+        </Grid>
+        <Grid>
+          <Cell size={3} />
+          <Cell size={6}>
+            <Throughput projeto={props.projeto}></Throughput>
+          </Cell>
+          <Cell size={3} />
+        </Grid>
+        <Grid>
+          <Cell size={3} />
+          <Cell size={6}>
+            <ModuloEscolha projeto={props.projeto} />
+          </Cell>
+          <Cell size={3} />
         </Grid>
       </VFlow>
     </>
