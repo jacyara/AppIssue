@@ -1,7 +1,8 @@
 import axios from "axios";
-import { Cell, DataTable, Grid, VFlow } from "bold-ui";
+import { Cell, DataTable, Grid, VFlow, PagedTable } from "bold-ui";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
+import { Chart } from "react-google-charts";
 import { Projeto } from "./Equipes";
 
 type Fechadas = {
@@ -13,9 +14,24 @@ type Fechadas = {
 interface FechadaProps {
   projeto: Projeto;
 }
+type Pagina = {
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
 
 export const Fechadas = (props: FechadaProps) => {
   const [fechadas, setFechadas] = useState<Fechadas[]>();
+  const [params, setParams] = useState({
+    page: 0,
+      size: 10,
+      totalElements: fechadas ? fechadas.length : 50,
+      totalPages: fechadas ? fechadas.length / 10 : 5,
+  });
+
+
+
 
   useEffect(() => {
     axios.get("/fechadas", { params: { id: props.projeto.id } }).then(resp => {
@@ -28,6 +44,18 @@ export const Fechadas = (props: FechadaProps) => {
     return null;
   }
 
+  // const [params, setParams] = useState({
+  //   page: 0,
+  //   size: 10,
+  //   totalElements: fechadas.length,
+  //   totalPages: fechadas.length / 10,
+  //   sort: ['id'],
+  // })
+
+  // if (!props || !fechadas|| !params) {
+  //   return null;
+  // }
+
   const calculaLeadTime = (row: Fechadas) => {
     const date1 = moment(row.aberta);
     const date2 = moment(row.fechada);
@@ -37,7 +65,7 @@ export const Fechadas = (props: FechadaProps) => {
   };
 
   const renderLeadTime = (row: Fechadas) => {
-    const days = calculaLeadTime(row);
+    const days = Math.round(calculaLeadTime(row));
     return <span>{days}</span>;
   };
 
@@ -58,6 +86,18 @@ export const Fechadas = (props: FechadaProps) => {
     return [["Issues", "Dias", "Media"], ...data];
   }
 
+  // setParams({
+  //     page: 0,
+  //   size: 10,
+  //   totalElements: fechadas.length,
+  //   totalPages: fechadas.length / 10,
+  // })
+
+  const handlePageChange = (page: number) => setParams({ 
+    ...params, page})
+  const handleSizeChange = (size: number) =>
+    setParams(({...params,size}))
+
   return (
     <>
       <Grid>
@@ -65,8 +105,14 @@ export const Fechadas = (props: FechadaProps) => {
         <Cell size={8}>
           <VFlow>
             <h2>Issues fechadas</h2>
-            <DataTable<Fechadas>
-              rows={fechadas}
+            <PagedTable<Fechadas>
+              rows={fechadas.slice(params.page * params.size, params.page * params.size + params.size)}
+              page={params.page}
+              size={params.size}
+              totalPages={Math.ceil(fechadas.length/params.size)}
+              totalElements={fechadas.length}
+              onPageChange={handlePageChange}
+              onSizeChange={handleSizeChange}
               columns={[
                 {
                   name: "issue",
@@ -86,6 +132,22 @@ export const Fechadas = (props: FechadaProps) => {
               ]}
             />
           </VFlow>
+        </Cell>
+        <Cell size={2} />
+      </Grid>
+      <Grid>
+        <Cell size={2} />
+        <Cell size={8}>
+          <Chart
+            chartType="ScatterChart"
+            width="100%"
+            height="400px"
+            data={fillData(fechadas)}
+            options={{
+              title: "Gráfico de Lead time das issues",
+              series: { 1: { type: "line" } }
+            }}
+          />
         </Cell>
         <Cell size={2} />
       </Grid>

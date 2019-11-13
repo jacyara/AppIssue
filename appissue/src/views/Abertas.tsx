@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Cell, DataTable, Grid, Theme, useStyles, VFlow } from "bold-ui";
+import { Cell, DataTable, Grid, Theme, useStyles, VFlow, PagedTable } from "bold-ui";
 import moment from "moment";
 import React, { CSSProperties, useEffect, useState } from "react";
 import { DateTime } from "./DateTime";
@@ -14,8 +14,15 @@ interface AbertasProps {
   projeto: Projeto;
 }
 
+
 export const Abertas = (props: AbertasProps) => {
   const [abertas, setAbertas] = useState<Abertas[]>();
+  const [params, setParams] = useState({
+    page: 0,
+      size: 10,
+      totalElements: abertas ? abertas.length : 50,
+      totalPages: abertas ? abertas.length / 10 : 5,
+  });
   const { classes } = useStyles(createStyles);
 
   useEffect(() => {
@@ -37,6 +44,11 @@ export const Abertas = (props: AbertasProps) => {
     return <span>{Math.round(days)}</span>;
   };
 
+  const handlePageChange = (page: number) => setParams({ 
+    ...params, page})
+  const handleSizeChange = (size: number) =>
+    setParams(({...params,size}))
+
   return (
     <>
       <Grid alignItems="center">
@@ -44,8 +56,14 @@ export const Abertas = (props: AbertasProps) => {
         <Cell size={8}>
           <VFlow>
             <h2 className={classes.container}>Issues abertas!</h2>
-            <DataTable<Abertas>
-              rows={abertas}
+            <PagedTable<Abertas>
+              rows={abertas.slice(params.page * params.size, params.page * params.size + params.size)}
+              page={params.page}
+              size={params.size}
+              totalPages={Math.ceil(abertas.length/params.size)}
+              totalElements={abertas.length}
+              onPageChange={handlePageChange}
+              onSizeChange={handleSizeChange}
               columns={[
                 {
                   name: "issue",
