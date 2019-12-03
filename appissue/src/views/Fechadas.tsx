@@ -1,8 +1,7 @@
 import axios from "axios";
-import { Cell, DataTable, Grid, VFlow, PagedTable } from "bold-ui";
+import { Cell, Grid, PagedTable, VFlow } from "bold-ui";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
-import { Chart } from "react-google-charts";
 import { Projeto } from "./Equipes";
 
 type Fechadas = {
@@ -132,22 +131,6 @@ export const Fechadas = (props: FechadaProps) => {
               ]}
             />
           </VFlow>
-        </Cell>
-        <Cell size={2} />
-      </Grid>
-      <Grid>
-        <Cell size={2} />
-        <Cell size={8}>
-          <Chart
-            chartType="ScatterChart"
-            width="100%"
-            height="400px"
-            data={fillData(fechadas)}
-            options={{
-              title: "Gráfico de Lead time das issues",
-              series: { 1: { type: "line" } }
-            }}
-          />
         </Cell>
         <Cell size={2} />
       </Grid>
