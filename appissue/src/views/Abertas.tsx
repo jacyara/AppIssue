@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Cell, DataTable, Grid, Theme, useStyles, VFlow, PagedTable } from "bold-ui";
+import { Cell, Grid, PagedTable, Theme, useStyles, VFlow } from "bold-ui";
 import moment from "moment";
 import React, { CSSProperties, useEffect, useState } from "react";
 import { DateTime } from "./DateTime";
@@ -100,7 +100,6 @@ export const Abertas = (props: AbertasProps) => {
 const createStyles = (theme: Theme) => ({
   container: {
     textAlign: "left",
-
     "& > p": {
       fontSize: "1rem",
       lineHeight: 2

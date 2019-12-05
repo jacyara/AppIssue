@@ -14,23 +14,20 @@ interface FechadaProps {
   projeto: Projeto;
 }
 type Pagina = {
-  page: number
-  size: number
-  totalElements: number
-  totalPages: number
-}
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
 
 export const Fechadas = (props: FechadaProps) => {
   const [fechadas, setFechadas] = useState<Fechadas[]>();
   const [params, setParams] = useState({
     page: 0,
-      size: 10,
-      totalElements: fechadas ? fechadas.length : 50,
-      totalPages: fechadas ? fechadas.length / 10 : 5,
+    size: 10,
+    totalElements: fechadas ? fechadas.length : 50,
+    totalPages: fechadas ? fechadas.length / 10 : 5
   });
-
-
-
 
   useEffect(() => {
     axios.get("/fechadas", { params: { id: props.projeto.id } }).then(resp => {
@@ -42,18 +39,6 @@ export const Fechadas = (props: FechadaProps) => {
   if (!props || !fechadas) {
     return null;
   }
-
-  // const [params, setParams] = useState({
-  //   page: 0,
-  //   size: 10,
-  //   totalElements: fechadas.length,
-  //   totalPages: fechadas.length / 10,
-  //   sort: ['id'],
-  // })
-
-  // if (!props || !fechadas|| !params) {
-  //   return null;
-  // }
 
   const calculaLeadTime = (row: Fechadas) => {
     const date1 = moment(row.aberta);
@@ -85,17 +70,12 @@ export const Fechadas = (props: FechadaProps) => {
     return [["Issues", "Dias", "Media"], ...data];
   }
 
-  // setParams({
-  //     page: 0,
-  //   size: 10,
-  //   totalElements: fechadas.length,
-  //   totalPages: fechadas.length / 10,
-  // })
-
-  const handlePageChange = (page: number) => setParams({ 
-    ...params, page})
-  const handleSizeChange = (size: number) =>
-    setParams(({...params,size}))
+  const handlePageChange = (page: number) =>
+    setParams({
+      ...params,
+      page
+    });
+  const handleSizeChange = (size: number) => setParams({ ...params, size });
 
   return (
     <>
@@ -105,10 +85,13 @@ export const Fechadas = (props: FechadaProps) => {
           <VFlow>
             <h2>Issues fechadas</h2>
             <PagedTable<Fechadas>
-              rows={fechadas.slice(params.page * params.size, params.page * params.size + params.size)}
+              rows={fechadas.slice(
+                params.page * params.size,
+                params.page * params.size + params.size
+              )}
               page={params.page}
               size={params.size}
-              totalPages={Math.ceil(fechadas.length/params.size)}
+              totalPages={Math.ceil(fechadas.length / params.size)}
               totalElements={fechadas.length}
               onPageChange={handlePageChange}
               onSizeChange={handleSizeChange}

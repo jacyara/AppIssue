@@ -1,12 +1,9 @@
 // server.js
-// where your node app starts
+// where node app starts
 
-// init project
 const express = require("express");
-//const mysql = require("mysql");
 const axios = require("axios");
 const app = express();
-//const ssl = require("sslmode");
 const pg = require("pg");
 const { Client } = require("pg");
 
@@ -110,7 +107,9 @@ var Base64 = {
 
 async function getGitURL(url) {
   let data;
-  const username = "jacyara";
+  //GitHub username
+  const username = "";
+  //GitHub token
   const password = "";
   const headers = {
     Accept:
@@ -156,15 +155,7 @@ async function getLabels() {
 }
 
 async function main() {
-  const projetos = await getProjects();
-  //issuesPorColuna();
-  //pegarEventos();
-  //insertLabels();
-  // insertCards("4924040");
-  //insertColumns(projectId);
-  //projetos.map(item => console.log(item.name + " " + item.creator.login));
   const listener = app.listen(5000, function() {
-    //connection();
     console.log(
       "Your app is listening on port http://localhost:" +
         listener.address().port
@@ -175,6 +166,7 @@ async function main() {
 main();
 
 const client = new Client({
+  //Conf do banco local
   host: "localhost",
   port: 5436,
   user: "root",
@@ -194,27 +186,22 @@ async function projectExpected(request, response) {
   client.query("SELECT * FROM board", async (err, res) => {
     try {
       if (err) throw err;
-      // console.log(res);
       if (res.rowCount === 0) {
         const bu = await getProjects();
         bu.map(item => {
-          // console.log("VALORES " + item.id + item.name);
           var sql = "INSERT INTO board (id, nome) VALUES ($1, $2)";
           client.query(sql, [item.id, item.name], function(err, result) {
             try {
               if (err) throw err;
-              // console.log("Number of records inserted: " + result.affectedRows);
             } catch (error) {
               console.log(error);
             }
           });
         });
       }
-      //client.end();
     } catch (error) {
       console.log(error);
     }
-    // console.log("RES  " + res);
     response.send({ res });
   });
 }
@@ -225,7 +212,6 @@ async function colunasExpected(request, response) {
   client.query(sql, [request.query.id], function(err, result) {
     try {
       if (err) throw err;
-      // console.log("Number of records inserted: " + result.affectedRows);
     } catch (error) {
       console.log(error);
     }
@@ -295,7 +281,6 @@ async function pegarEventos() {
             break;
           }
           case "added_to_project": {
-            //console.log(evento.event);
             insertIssues(evento);
             insertCards(evento);
             client.query(
@@ -420,7 +405,6 @@ async function pegarEventos() {
             break;
           }
           case "labeled": {
-            //console.log(evento);
             client.query(
               "INSERT INTO rl_label_issue (id_issue, coluna) values ($1, $2)",
               [evento.issue.number, evento.label.name],
@@ -463,8 +447,6 @@ async function pegarEventos() {
       eventos = await getEvents(i);
     } while (i < 509);
   });
-
-  //console.log("Eventos: ", eventos.length);
 }
 
 app.get("/eventos", pegarEventos);
@@ -481,7 +463,6 @@ async function insertIssues(evento) {
     async function(err, result) {
       try {
         if (err) throw err;
-        //console.log("Number of records inserted: " + result.affectedRows);
       } catch (error) {
         console.log(error);
       }
@@ -491,9 +472,6 @@ async function insertIssues(evento) {
 
 async function insertCards(evento) {
   console.log(evento.project_card);
-  // let issue = itemCard.content_url;
-  // let numberIssue =
-  //   issue && issue.substring(issue.lastIndexOf("/") + 1, issue.length);
   var sql =
     "INSERT INTO cards (id, created, project_id, coluna, number_issue) VALUES ($1, $2, $3, $4, $5)";
   client.query(
@@ -508,7 +486,6 @@ async function insertCards(evento) {
     function(err, result) {
       try {
         if (err) throw err;
-        //console.log("Number of records inserted: " + result.affectedRows);
       } catch (error) {
         console.log(error);
       }
@@ -545,14 +522,12 @@ async function issuesPorColuna(request, response) {
     sql,
     [request.query.id, request.query.dataInicio, request.query.dataFim],
     function(err, result) {
-      //console.log("AQUIIIIIIIIIIIHSAHSA           ", request.query);
       try {
         if (err) throw err;
       } catch (error) {
         console.log(error);
       }
       response.send({ result });
-      //console.log("Issues, colunas", result);
     }
   );
 }
@@ -571,7 +546,6 @@ async function issuesAbertas(request, response) {
       console.log(error);
     }
     response.send({ result });
-    //console.log("Issues, colunas", result);
   });
 }
 
@@ -662,10 +636,6 @@ async function concluidasByLabel(request, response) {
 
 app.get("/concluidas", concluidasByLabel);
 
-//idEventos();
-
-//pegarEventos();
-
 async function idEventos() {
   var sql = "select id from eventos";
   client.query(sql, function(err, result) {
@@ -679,7 +649,5 @@ async function idEventos() {
 }
 
 const baseDir = `${__dirname}/build/`;
-// we've started you off with Express,
-// but feel free to use whatever libs or frameworks you'd like through `package.json`.
-//http://expressjs.com/en/starter/static-files.html
+
 app.use(express.static(baseDir));
